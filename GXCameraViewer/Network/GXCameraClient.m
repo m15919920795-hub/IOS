@@ -181,7 +181,6 @@ enum { GXReadHeaderTag = 1, GXReadBodyTag = 2 };
     [self clearSession]; [self publish];
 }
 - (void)socket:(GCDAsyncSocket *)socket didReadData:(NSData *)data withTag:(long)tag {
-    NSLog(@"Video Data %@",data);
     if (socket != _socket) return;
     if (tag == GXReadHeaderTag) {
         if (!GXVPReadHeader(data.bytes, data.length, &_incoming)) {
