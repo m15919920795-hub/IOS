@@ -135,7 +135,7 @@
     ]];
     // Fit the panel to its contents, scrolling when the screen or keyboard leaves less room.
     NSLayoutConstraint *panelHeight = [self.controlsScrollView.heightAnchor constraintEqualToAnchor:content.heightAnchor];
-    panelHeight.priority = UILayoutPriorityDefaultHigh; panelHeight.active = YES;
+    panelHeight.priority = UILayoutPriorityDefaultLow; panelHeight.active = YES;
     [self updateControlsLayout];
     self.client = [[GXCameraClient alloc] initWithVideoView:self.videoView]; self.client.delegate = self;
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(background:)
