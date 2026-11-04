@@ -24,7 +24,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         _lock = [NSLock new]; self.backgroundColor = UIColor.blackColor;
-        self.clipsToBounds = YES; self.layer.cornerRadius = 12;
+        self.clipsToBounds = YES;
         [self replaceDisplayLayer];
         GXDisplayLinkProxy *proxy = [GXDisplayLinkProxy new]; proxy.view = self;
         _displayLink = [CADisplayLink displayLinkWithTarget:proxy selector:@selector(tick:)];
@@ -46,7 +46,7 @@
 - (void)replaceDisplayLayer {
     [_displayLayer removeFromSuperlayer];
     _displayLayer = [AVSampleBufferDisplayLayer layer];
-    _displayLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+    _displayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     _displayLayer.frame = self.bounds;
     [self.layer addSublayer:_displayLayer];
 }
