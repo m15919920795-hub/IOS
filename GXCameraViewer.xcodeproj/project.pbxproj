@@ -1,0 +1,456 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0BD8A83ECE2E0614979E09B3 /* GXSceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E2E10B51735626D13D7562A /* GXSceneDelegate.m */; };
+		1BB4DDC68C31251304CE5061 /* GXVideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B7ABE7B1CEA23ED20223B45 /* GXVideoView.m */; };
+		22B50ACFF702753D22F7DBCB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BC0E73CBD637A35FB7E6129F /* main.m */; };
+		30B91461A0FF5022F18B5F0A /* GXCameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B49D053D9C107013544925 /* GXCameraViewController.m */; };
+		53FF1530BBB64A8DF65CD86F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F0507567C30F6245CE3F4B4 /* Security.framework */; };
+		665BEBBE632467DD4DD77C37 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 45302BB0DA2EE8F9193BA6B7 /* AVFoundation.framework */; };
+		674F7492BD610F974D1EEDD4 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C59D3FCC36046FC191571614 /* CoreMedia.framework */; };
+		807FB026343A18BD8625E2C5 /* GXVideoPipeline.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B13FFBCB0B73CF4A56BE577 /* GXVideoPipeline.m */; };
+		941747687507B38D8719FEA7 /* GXH264Decoder.m in Sources */ = {isa = PBXBuildFile; fileRef = FDC0762E0A4C9B74A3AA8468 /* GXH264Decoder.m */; };
+		96A3BD04B8C85861F75367CB /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 683E10DE6FCEA41AAEB2D898 /* VideoToolbox.framework */; };
+		A1BF67C8FDFACF55E69DAB18 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0B603597762D5A7B3B4E398 /* CFNetwork.framework */; };
+		B4350629AF8B0421A5E4BFEE /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A23CB11CFF5049BCB887441A /* CoreVideo.framework */; };
+		CCCAEE33B45800316D622C96 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 311AE33D009637155BA2CF41 /* Foundation.framework */; };
+		CF8A4D27E1C506A7C75A76BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83F7987CF759E97F01A423F6 /* Assets.xcassets */; };
+		D041DCB4D5C32AECB3B4227C /* GXAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 22965F070AD56E67FA7018A8 /* GXAppDelegate.m */; };
+		E4B2093A3D012A0D6C128F91 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7599D1D6C4E0965A3B35B1EC /* UIKit.framework */; };
+		ED5515BE9EC5C2E8DC76B514 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = E55A8CC6397119BC2F346606 /* CocoaAsyncSocket */; };
+		F4CA4F8F4DA49D49A4684A73 /* GXVPWire.c in Sources */ = {isa = PBXBuildFile; fileRef = 19C881878AE42B60B1F69FE3 /* GXVPWire.c */; };
+		F78E0A6D13DA53054AB07E8A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */; };
+		F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */ = {isa = PBXBuildFile; fileRef = BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0B110EAA69F88C6B6836364F /* GXVideoPipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXVideoPipeline.h; sourceTree = "<group>"; };
+		0B13FFBCB0B73CF4A56BE577 /* GXVideoPipeline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXVideoPipeline.m; sourceTree = "<group>"; };
+		19C881878AE42B60B1F69FE3 /* GXVPWire.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = GXVPWire.c; sourceTree = "<group>"; };
+		1C810356676FE3DFE0845016 /* GXVPWire.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXVPWire.h; sourceTree = "<group>"; };
+		22965F070AD56E67FA7018A8 /* GXAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXAppDelegate.m; sourceTree = "<group>"; };
+		311AE33D009637155BA2CF41 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		38A007151ABE87CC01A5B6E9 /* GXCameraViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GXCameraViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		38A6459849EE1B7DCD7E7FE7 /* GXCameraViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXCameraViewController.h; sourceTree = "<group>"; };
+		45302BB0DA2EE8F9193BA6B7 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		4D1B655DB2183DBC0477B49E /* GXSceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXSceneDelegate.h; sourceTree = "<group>"; };
+		4EA69D19A5CDD3EE25B347A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4F0507567C30F6245CE3F4B4 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		5B7ABE7B1CEA23ED20223B45 /* GXVideoView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXVideoView.m; sourceTree = "<group>"; };
+		683E10DE6FCEA41AAEB2D898 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		7599D1D6C4E0965A3B35B1EC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		83F7987CF759E97F01A423F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E2E10B51735626D13D7562A /* GXSceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXSceneDelegate.m; sourceTree = "<group>"; };
+		A23CB11CFF5049BCB887441A /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		B6730740C72AB7669B8BDC63 /* GXH264Decoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXH264Decoder.h; sourceTree = "<group>"; };
+		BAAE4735D7F06AB9AF0FEEF6 /* GXCameraClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXCameraClient.h; sourceTree = "<group>"; };
+		BC0E73CBD637A35FB7E6129F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXCameraClient.m; sourceTree = "<group>"; };
+		C59D3FCC36046FC191571614 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		D4B49D053D9C107013544925 /* GXCameraViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXCameraViewController.m; sourceTree = "<group>"; };
+		E0B603597762D5A7B3B4E398 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		E246C377AFB3A2081F169C40 /* GXVideoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXVideoView.h; sourceTree = "<group>"; };
+		E4DC0A99B6E9C2A76DF99649 /* GXAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXAppDelegate.h; sourceTree = "<group>"; };
+		F78A71AF8BBF8CC2F6F31354 /* README_CN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README_CN.md; sourceTree = "<group>"; };
+		FDC0762E0A4C9B74A3AA8468 /* GXH264Decoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXH264Decoder.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BEE832DE65DB5CA7507F7EF9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4B2093A3D012A0D6C128F91 /* UIKit.framework in Frameworks */,
+				CCCAEE33B45800316D622C96 /* Foundation.framework in Frameworks */,
+				665BEBBE632467DD4DD77C37 /* AVFoundation.framework in Frameworks */,
+				96A3BD04B8C85861F75367CB /* VideoToolbox.framework in Frameworks */,
+				674F7492BD610F974D1EEDD4 /* CoreMedia.framework in Frameworks */,
+				B4350629AF8B0421A5E4BFEE /* CoreVideo.framework in Frameworks */,
+				F78E0A6D13DA53054AB07E8A /* QuartzCore.framework in Frameworks */,
+				53FF1530BBB64A8DF65CD86F /* Security.framework in Frameworks */,
+				A1BF67C8FDFACF55E69DAB18 /* CFNetwork.framework in Frameworks */,
+				ED5515BE9EC5C2E8DC76B514 /* CocoaAsyncSocket in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1AB265AEABC8F6D024E5C280 /* Video */ = {
+			isa = PBXGroup;
+			children = (
+				B6730740C72AB7669B8BDC63 /* GXH264Decoder.h */,
+				FDC0762E0A4C9B74A3AA8468 /* GXH264Decoder.m */,
+				0B110EAA69F88C6B6836364F /* GXVideoPipeline.h */,
+				0B13FFBCB0B73CF4A56BE577 /* GXVideoPipeline.m */,
+				E246C377AFB3A2081F169C40 /* GXVideoView.h */,
+				5B7ABE7B1CEA23ED20223B45 /* GXVideoView.m */,
+			);
+			path = Video;
+			sourceTree = "<group>";
+		};
+		325F10A6957A34D66CB8C0E4 = {
+			isa = PBXGroup;
+			children = (
+				BCE16DD0260827ECF338C787 /* GXCameraViewer */,
+				7561BFB015D8F536760CB671 /* Frameworks */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+				F78A71AF8BBF8CC2F6F31354 /* README_CN.md */,
+			);
+			sourceTree = "<group>";
+		};
+		3DCF8F0A4988BC44B465F8E0 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				38A6459849EE1B7DCD7E7FE7 /* GXCameraViewController.h */,
+				D4B49D053D9C107013544925 /* GXCameraViewController.m */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		642DF95ECB8EB649B1FC7142 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				83F7987CF759E97F01A423F6 /* Assets.xcassets */,
+				4EA69D19A5CDD3EE25B347A2 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7561BFB015D8F536760CB671 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7599D1D6C4E0965A3B35B1EC /* UIKit.framework */,
+				311AE33D009637155BA2CF41 /* Foundation.framework */,
+				45302BB0DA2EE8F9193BA6B7 /* AVFoundation.framework */,
+				683E10DE6FCEA41AAEB2D898 /* VideoToolbox.framework */,
+				C59D3FCC36046FC191571614 /* CoreMedia.framework */,
+				A23CB11CFF5049BCB887441A /* CoreVideo.framework */,
+				33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */,
+				4F0507567C30F6245CE3F4B4 /* Security.framework */,
+				E0B603597762D5A7B3B4E398 /* CFNetwork.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B98C348532BBFED3D31B849F /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				BAAE4735D7F06AB9AF0FEEF6 /* GXCameraClient.h */,
+				BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		BCE16DD0260827ECF338C787 /* GXCameraViewer */ = {
+			isa = PBXGroup;
+			children = (
+				F347C9307810D9E559E5E2DD /* App */,
+				FB67CB490F982FB3D13CF123 /* Core */,
+				B98C348532BBFED3D31B849F /* Network */,
+				1AB265AEABC8F6D024E5C280 /* Video */,
+				3DCF8F0A4988BC44B465F8E0 /* UI */,
+				642DF95ECB8EB649B1FC7142 /* Resources */,
+			);
+			path = GXCameraViewer;
+			sourceTree = "<group>";
+		};
+		F347C9307810D9E559E5E2DD /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E4DC0A99B6E9C2A76DF99649 /* GXAppDelegate.h */,
+				22965F070AD56E67FA7018A8 /* GXAppDelegate.m */,
+				4D1B655DB2183DBC0477B49E /* GXSceneDelegate.h */,
+				9E2E10B51735626D13D7562A /* GXSceneDelegate.m */,
+				BC0E73CBD637A35FB7E6129F /* main.m */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		FB67CB490F982FB3D13CF123 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				19C881878AE42B60B1F69FE3 /* GXVPWire.c */,
+				1C810356676FE3DFE0845016 /* GXVPWire.h */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				38A007151ABE87CC01A5B6E9 /* GXCameraViewer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0E8A3AD980EC179856012B7E /* GXCameraViewer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4FE71F2A87991572F562EAA3 /* Build configuration list for PBXNativeTarget "GXCameraViewer" */;
+			buildPhases = (
+				D3C3E067FC1BBCCEAA4D9313 /* Sources */,
+				BEE832DE65DB5CA7507F7EF9 /* Frameworks */,
+				ECE2D868E17AEF81A05610A3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GXCameraViewer;
+			packageProductDependencies = (
+				E55A8CC6397119BC2F346606 /* CocoaAsyncSocket */,
+			);
+			productName = GXCameraViewer;
+			productReference = 38A007151ABE87CC01A5B6E9 /* GXCameraViewer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					0E8A3AD980EC179856012B7E = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = BC7E287B75C6D3E574547D08 /* Build configuration list for PBXProject "GXCameraViewer" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = zh_CN;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				zh_CN,
+				en,
+				Base,
+			);
+			mainGroup = 325F10A6957A34D66CB8C0E4;
+			packageReferences = (
+				582681C2EAE02B3F3D399C0C /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */,
+			);
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0E8A3AD980EC179856012B7E /* GXCameraViewer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ECE2D868E17AEF81A05610A3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF8A4D27E1C506A7C75A76BE /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D3C3E067FC1BBCCEAA4D9313 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D041DCB4D5C32AECB3B4227C /* GXAppDelegate.m in Sources */,
+				0BD8A83ECE2E0614979E09B3 /* GXSceneDelegate.m in Sources */,
+				22B50ACFF702753D22F7DBCB /* main.m in Sources */,
+				F4CA4F8F4DA49D49A4684A73 /* GXVPWire.c in Sources */,
+				F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */,
+				941747687507B38D8719FEA7 /* GXH264Decoder.m in Sources */,
+				807FB026343A18BD8625E2C5 /* GXVideoPipeline.m in Sources */,
+				1BB4DDC68C31251304CE5061 /* GXVideoView.m in Sources */,
+				30B91461A0FF5022F18B5F0A /* GXCameraViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5E0BF4151EBA9E1E1ACA708C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development: Guan Zhi (JMMVE7P3A3)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/GXCameraViewer/App",
+					"$(SRCROOT)/GXCameraViewer/Core",
+					"$(SRCROOT)/GXCameraViewer/Network",
+					"$(SRCROOT)/GXCameraViewer/Video",
+					"$(SRCROOT)/GXCameraViewer/UI",
+				);
+				INFOPLIST_FILE = GXCameraViewer/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gz.devskview2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = SKYViperViewDevPF20260813;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7132FFE4B9D4F290AF1220E5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		91D1FC344DD3054566D4B505 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development: Guan Zhi (JMMVE7P3A3)";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/GXCameraViewer/App",
+					"$(SRCROOT)/GXCameraViewer/Core",
+					"$(SRCROOT)/GXCameraViewer/Network",
+					"$(SRCROOT)/GXCameraViewer/Video",
+					"$(SRCROOT)/GXCameraViewer/UI",
+				);
+				INFOPLIST_FILE = GXCameraViewer/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gz.devskview2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = SKYViperViewDevPF20260813;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A9EED8D06CFB973894D7BFFD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_NS_ASSERTIONS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4FE71F2A87991572F562EAA3 /* Build configuration list for PBXNativeTarget "GXCameraViewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				91D1FC344DD3054566D4B505 /* Debug */,
+				5E0BF4151EBA9E1E1ACA708C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BC7E287B75C6D3E574547D08 /* Build configuration list for PBXProject "GXCameraViewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9EED8D06CFB973894D7BFFD /* Debug */,
+				7132FFE4B9D4F290AF1220E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		582681C2EAE02B3F3D399C0C /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/robbiehanson/CocoaAsyncSocket.git";
+			requirement = {
+				kind = exactVersion;
+				version = 7.6.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E55A8CC6397119BC2F346606 /* CocoaAsyncSocket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 582681C2EAE02B3F3D399C0C /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */;
+			productName = CocoaAsyncSocket;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}
