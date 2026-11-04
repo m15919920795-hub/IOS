@@ -40,7 +40,8 @@ GCDAsyncSocket 内部 socket 队列
     → 最多 3 帧 H.264 待解码队列
     → 串行解码队列（VideoToolbox，同步提交一帧，不启用时序重排）
     → CVPixelBuffer 最新图像槽（最多 1 帧）
-    → 主线程 CADisplayLink + 系统 AVSampleBufferDisplayLayer
+    → 解码输出立即唤醒主线程提交（合并待执行任务，不等待 CADisplayLink）
+    → 系统 AVSampleBufferDisplayLayer
 ```
 
 - 严格校验魔数、版本、方向、标志、头/体长度、流编号和应答编号。单帧体上限 **512000 字节**，不会按未验证的长度分配。
@@ -51,6 +52,7 @@ GCDAsyncSocket 内部 socket 队列
 - 未开始解码的帧在本地等待超过 **200 ms**、队列满、序号中断或源端不连续时，清队列并等待 SPS/PPS/IDR；不会丢 P 帧后继续解码相关 P 帧。
 - 到达偏移相对本流最小值超过 **300 ms** 时，丢弃旧输入、请求关键帧恢复。未进行设备/手机时钟同步，该偏移不是端到端延迟。
 - 系统图层接收已解码图像，设置 `kCMSampleAttachmentKey_DisplayImmediately`，不按板端时间戳排播放时钟。iOS 17 及以上使用 `sampleBufferRenderer`，源码保留 iOS 15/16 的图层兼容分支；工程的最低运行版本仍设为 iOS 17。
+- 解码完成后立即安排主线程提交显示，去掉原先等待 `CADisplayLink` 刷新回调的环节。最多保留一个待执行提交任务和一帧待显示图像；主线程繁忙时仍以新图像替换旧图像，避免逐帧任务积压。图层重建和提交都在主线程执行；流代重置先于新流画面提交，进入后台后停止提交。
 - 主线程暂停时新图像替换旧图像，恢复后不补播显示队列。TCP、系统渲染和硬件仍可能引入时延，200 ms 是局部年龄策略。
 - STOP、重连和档位切换都有 generation 隔离，旧硬解输出和旧代故障不会污染新流。
 
@@ -63,7 +65,7 @@ GCDAsyncSocket 内部 socket 队列
 | `GXCameraViewer/Network/GXCameraClient.m` | GCDAsyncSocket、请求编号/匹配、启停状态、超时、断线清理、统计 |
 | `GXCameraViewer/Video/GXVideoPipeline.m` | 有界输入队列、帧龄/参考链恢复、流代隔离 |
 | `GXCameraViewer/Video/GXH264Decoder.m` | SPS/PPS、AVCC sample、VideoToolbox 硬件会话 |
-| `GXCameraViewer/Video/GXVideoView.m` | 最新像素缓冲槽、DisplayLink、系统显示图层 |
+| `GXCameraViewer/Video/GXVideoView.m` | 最新像素缓冲槽、事件驱动的即时提交、系统显示图层 |
 | `GXCameraViewer/UI/GXCameraViewController.m` | 中文界面、按钮状态、设置和日志 |
 | `tools/check_macos.sh` | Mac 上解析依赖并编译真机目标（不签名） |
 | `tools/test_core.sh` | 协议对照及内存边界测试；仓库中使用真实板端源码，独立包中使用随附协议快照 |
@@ -88,6 +90,8 @@ bash tools/check_macos.sh
 首轮真机请依次验证：连接后空闲 → 720p 开始 → 停止 → 1080p 开始 → 停止 → 多轮重复 → 旋转/操作界面 → 断开重连 → 进入后台再返回。查看接收/硬解/显示帧率及 Xcode 日志；帧率和“相对到达偏移”均不替代拍摄计时器等光学端到端延迟测量。
 
 横屏显示修改需在 Mac/iPhone/iPad 上补充检查：竖持设备启动仍为横屏 → 左右横屏切换 → 画面覆盖屏幕底部且不拉伸 → 播放中反复点击“仅画面／恢复界面”且视频不断流 → 恢复后按钮状态和档位正确 → 键盘弹出时能滚动编辑地址 → 在仅画面模式下切后台后返回仍需手动恢复界面、连接及开始。当前 Linux 检查不验证这些 UIKit 显示效果。
+
+即时提交显示修改尚需真机对比：在相同设备、档位和网络条件下，对比旧版与新版拍摄计时器的端到端延迟；同时观察接收／硬解／显示帧率及替换计数。反复停止／开始、720p／1080p 切换、断开／重连、左右横屏、仅画面切换及切后台再返回，确认旧画面不会进入新流、停止后清屏、后台返回不补播。主线程仍可能等待，系统合成和屏幕刷新仍有延迟；去掉刷新回调不等于保证降低固定毫秒数。当前 Linux 测试未验证 iOS 渲染效果或性能。
 
 ## 常见问题
 

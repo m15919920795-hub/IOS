@@ -1,23 +1,16 @@
 #import "GXVideoView.h"
 #import <AVFoundation/AVFoundation.h>
 
-@class GXDisplayLinkProxy;
 @interface GXVideoView () {
     NSLock *_lock;
     CVPixelBufferRef _latest;
     CFTimeInterval _arrival;
     uint64_t _generation, _offered, _replaced, _displayed, _stale;
     AVSampleBufferDisplayLayer *_displayLayer;
-    CADisplayLink *_displayLink;
+    BOOL _drawScheduled, _inBackground, _needsLayerReset;
 }
+- (void)scheduleDrawLocked;
 - (void)drawLatest;
-@end
-@interface GXDisplayLinkProxy : NSObject
-@property (nonatomic, weak) GXVideoView *view;
-- (void)tick:(CADisplayLink *)link;
-@end
-@implementation GXDisplayLinkProxy
-- (void)tick:(CADisplayLink *)link { (void)link; [self.view drawLatest]; }
 @end
 
 @implementation GXVideoView
@@ -26,9 +19,7 @@
         _lock = [NSLock new]; self.backgroundColor = UIColor.blackColor;
         self.clipsToBounds = YES;
         [self replaceDisplayLayer];
-        GXDisplayLinkProxy *proxy = [GXDisplayLinkProxy new]; proxy.view = self;
-        _displayLink = [CADisplayLink displayLinkWithTarget:proxy selector:@selector(tick:)];
-        [_displayLink addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
+        _inBackground = UIApplication.sharedApplication.applicationState == UIApplicationStateBackground;
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(background:)
             name:UIApplicationDidEnterBackgroundNotification object:nil];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(foreground:)
@@ -37,12 +28,20 @@
     return self;
 }
 - (void)dealloc {
-    [_displayLink invalidate];
     [NSNotificationCenter.defaultCenter removeObserver:self];
     if (_latest) CVPixelBufferRelease(_latest);
 }
-- (void)background:(NSNotification *)notification { (void)notification; _displayLink.paused = YES; }
-- (void)foreground:(NSNotification *)notification { (void)notification; _displayLink.paused = NO; }
+- (void)background:(NSNotification *)notification {
+    (void)notification;
+    [_lock lock];
+    _inBackground = YES;
+    if (_latest) { CVPixelBufferRelease(_latest); _latest = NULL; _stale++; }
+    [_lock unlock];
+}
+- (void)foreground:(NSNotification *)notification {
+    (void)notification;
+    [_lock lock]; _inBackground = NO; [self scheduleDrawLocked]; [_lock unlock];
+}
 - (void)replaceDisplayLayer {
     [_displayLayer removeFromSuperlayer];
     _displayLayer = [AVSampleBufferDisplayLayer layer];
@@ -60,20 +59,28 @@
     _generation = generation;
     if (_latest) { CVPixelBufferRelease(_latest); _latest = NULL; }
     _offered = _replaced = _displayed = _stale = 0;
+    // Reset and submission share one main-queue task so a new frame cannot race ahead of its reset.
+    _needsLayerReset = YES;
+    [self scheduleDrawLocked];
     [_lock unlock];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self->_lock lock]; BOOL current = generation == self->_generation; [self->_lock unlock];
-        if (current) [self replaceDisplayLayer];
-    });
 }
 - (void)offerPixelBuffer:(CVPixelBufferRef)image generation:(uint64_t)generation arrivalTime:(CFTimeInterval)arrival {
     [_lock lock];
     if (generation == _generation) {
         _offered++;
+        if (_inBackground) { _stale++; [_lock unlock]; return; }
         if (_latest) { CVPixelBufferRelease(_latest); _replaced++; }
         _latest = CVPixelBufferRetain(image); _arrival = arrival;
+        [self scheduleDrawLocked];
     }
     [_lock unlock];
+}
+// Caller holds _lock. Wake the main queue immediately, without waiting for a refresh callback.
+// At most one task is queued; newer decoded frames replace the pending image if the main thread is busy.
+- (void)scheduleDrawLocked {
+    if (_drawScheduled || (!_needsLayerReset && (_inBackground || !_latest))) return;
+    _drawScheduled = YES;
+    dispatch_async(dispatch_get_main_queue(), ^{ [self drawLatest]; });
 }
 - (NSDictionary<NSString *, NSNumber *> *)statistics {
     [_lock lock];
@@ -83,12 +90,16 @@
 }
 - (void)drawLatest {
     [_lock lock];
-    CVPixelBufferRef image = _latest; _latest = NULL;
+    _drawScheduled = NO;
+    if (_needsLayerReset) { [self replaceDisplayLayer]; _needsLayerReset = NO; }
+    CVPixelBufferRef image = _inBackground ? NULL : _latest;
+    if (image) _latest = NULL;
     uint64_t generation = _generation; CFTimeInterval arrival = _arrival;
     [_lock unlock];
     if (!image) return;
     if (CACurrentMediaTime() - arrival > 0.2) {
-        CVPixelBufferRelease(image); [_lock lock]; _stale++; [_lock unlock]; return;
+        CVPixelBufferRelease(image);
+        [_lock lock]; if (generation == _generation) _stale++; [_lock unlock]; return;
     }
     CMVideoFormatDescriptionRef format = NULL;
     CMSampleBufferRef sample = NULL;
@@ -97,13 +108,17 @@
     if (status == noErr) status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault, image, format, &timing, &sample);
     CVPixelBufferRelease(image);
     if (format) CFRelease(format);
-    if (status != noErr) return;
+    if (status != noErr) {
+        [_lock lock]; if (generation == _generation) _stale++; [_lock unlock]; return;
+    }
     CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(sample, true);
     if (attachments && CFArrayGetCount(attachments)) {
         CFMutableDictionaryRef item = (CFMutableDictionaryRef)CFArrayGetValueAtIndex(attachments, 0);
         CFDictionarySetValue(item, kCMSampleAttachmentKey_DisplayImmediately, kCFBooleanTrue);
     }
-    [_lock lock]; BOOL current = generation == _generation; [_lock unlock];
+    // Keep validation and enqueue atomic with STOP/reconnect generation changes.
+    [_lock lock];
+    BOOL current = generation == _generation && !_needsLayerReset && !_inBackground;
     BOOL enqueued = NO;
     if (current) {
         if (@available(iOS 17.0, *)) {
@@ -115,9 +130,8 @@
             if (_displayLayer.readyForMoreMediaData) { [_displayLayer enqueueSampleBuffer:sample]; enqueued = YES; }
         }
     }
-    CFRelease(sample);
-    [_lock lock];
-    if (current && generation == _generation) { if (enqueued) _displayed++; else _stale++; }
+    if (generation == _generation) { if (enqueued) _displayed++; else _stale++; }
     [_lock unlock];
+    CFRelease(sample);
 }
 @end
