@@ -89,7 +89,18 @@
     self.personSwitch = [UISwitch new];
     [self.personSwitch addTarget:self action:@selector(personSwitchChanged) forControlEvents:UIControlEventValueChanged];
     self.personConnectButton = [self button:@"识别重连" action:@selector(personConnectTapped)];
-    [self.personConnectButton.widthAnchor constraintEqualToConstant:94].active = YES;
+    UIButtonConfiguration *reconnectStyle = [self.personConnectButton.configuration copy];
+    reconnectStyle.attributedTitle = [[NSAttributedString alloc] initWithString:@"识别重连"
+        attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold]}];
+    reconnectStyle.titleLineBreakMode = NSLineBreakByClipping;
+    reconnectStyle.contentInsets = NSDirectionalEdgeInsetsMake(8, 12, 8, 12);
+    self.personConnectButton.configuration = reconnectStyle;
+    self.personConnectButton.titleLabel.numberOfLines = 1;
+    // Size for the full title; let the explanatory label wrap before compressing the button.
+    [self.personConnectButton.widthAnchor constraintGreaterThanOrEqualToConstant:104].active = YES;
+    [self.personConnectButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    [self.personSwitch setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    [personTitle setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
     UIStackView *personRow = [self row:@[personTitle, self.personSwitch, self.personConnectButton]];
     personRow.alignment = UIStackViewAlignmentCenter;
     self.personLabel = [self label:12 weight:UIFontWeightRegular]; self.personLabel.numberOfLines = 2;
