@@ -54,13 +54,13 @@
     _received = _bytes = _drops = _lastTimestamp = 0; _decodeFailures = 0;
     _minimumOffset = DBL_MAX; _relativeLag = 0; [_packets removeAllObjects];
     uint64_t generation = _generation;
-    [_view beginGeneration:generation];
+    [_view beginGeneration:generation streamID:streamID];
     [self scheduleWorkerLocked]; [_lock unlock];
 }
 - (void)stop {
     [_lock lock];
     _configured = NO; _streamID = 0; _generation++; _needsReset = YES; _hardware = NO;
-    [_packets removeAllObjects]; [_view beginGeneration:_generation];
+    [_packets removeAllObjects]; [_view beginGeneration:_generation streamID:0];
     [self scheduleWorkerLocked]; [_lock unlock];
 }
 - (void)recoverLocked {

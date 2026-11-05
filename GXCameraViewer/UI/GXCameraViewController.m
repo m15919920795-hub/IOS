@@ -139,6 +139,7 @@
 - (BOOL)textFieldShouldReturn:(UITextField *)textField { [textField resignFirstResponder]; return YES; }
 - (void)connectTapped {
     [self.view endEditing:YES];
+    [self.videoView setPersonDetectionResult:nil];
     if ([self.status[@"connected"] boolValue] || [self.status[@"connecting"] boolValue]) {
         [self.client disconnect]; [self.personClient disconnect]; return;
     }
@@ -155,14 +156,18 @@
     [self.personClient connectToHost:host];
 }
 - (void)startTapped { [self.client startProfile:(uint8_t)(self.profiles.selectedSegmentIndex + 1)]; }
-- (void)stopTapped { [self.client stop]; }
+- (void)stopTapped { [self.videoView setPersonDetectionResult:nil]; [self.client stop]; }
 - (void)statusTapped { [self.client getStatus]; }
 - (void)idrTapped { [self.client requestIDR]; }
 - (void)personConnectTapped {
+    [self.videoView setPersonDetectionResult:nil];
     NSString *host = [self.hostField.text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     if (host.length) [self.personClient connectToHost:host];
 }
-- (void)personSwitchChanged { [self.personClient setDetectionEnabled:self.personSwitch.on]; }
+- (void)personSwitchChanged {
+    [self.videoView setPersonDetectionResult:nil];
+    [self.personClient setDetectionEnabled:self.personSwitch.on];
+}
 - (void)personClient:(GXPersonClient *)client stateChanged:(NSDictionary<NSString *,id> *)state {
     (void)client; self.personState = state; [self renderPersonState];
 }
@@ -195,6 +200,18 @@
         }
     }
     self.personLabel.text = text;
+    NSDictionary *result = s[@"result"];
+    BOOL showBoxes = connected && known && [s[@"ready"] boolValue] && [s[@"enabled"] boolValue] &&
+        [s[@"running"] boolValue] && ![s[@"pending"] boolValue] && result && [result[@"valid"] boolValue] &&
+        [result[@"status"] integerValue] == 0 && [self.status[@"connected"] boolValue] &&
+        [self.status[@"configured"] boolValue] && ![self.status[@"pending"] boolValue] &&
+        [self.status[@"state"] unsignedIntValue] == GXVPRunning &&
+        [result[@"generation"] unsignedIntValue] == [s[@"generation"] unsignedIntValue] &&
+        [result[@"stream"] unsignedIntValue] == [s[@"stream"] unsignedIntValue] &&
+        [result[@"stream"] unsignedIntValue] == [self.status[@"stream"] unsignedIntValue] &&
+        [result[@"video_width"] unsignedIntValue] == [self.status[@"width"] unsignedIntValue] &&
+        [result[@"video_height"] unsignedIntValue] == [self.status[@"height"] unsignedIntValue];
+    [self.videoView setPersonDetectionResult:showBoxes ? result : nil];
 }
 - (void)cameraClient:(GXCameraClient *)client statusChanged:(NSDictionary<NSString *,id> *)status {
     (void)client; [self applyStatus:status];

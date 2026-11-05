@@ -6,11 +6,13 @@ Objective-C / UIKit 工程，对接当前 BK7259 `camera_tcp_example` 的 **GXVP
 
 新增独立 **TCP 5601 / 逐行 JSON v1**。点击主“连接”时，同时连接视频 5600 和识别 5601；识别连接失败不影响视频，可点击“识别重连”。“人形识别”开关控制板端取帧/推理，不控制视频。板端默认开启，每 300 ms 启动一次检测，视频未 START 时等待输入。
 
-竖屏显示最新人数、推理时间及首框置信度、视频像素坐标。无人时人数归零，错误与无人分开显示；开关、流编号、代次变化时清除旧结果。横屏隐藏详细统计，保留开关和视频。本次不叠加人框，也不改变解码/显示链路。
+竖屏显示最新人数、推理时间及首框置信度、视频像素坐标。无人时人数归零，错误与无人分开显示；开关、流编号、代次变化时清除旧结果。横屏隐藏详细统计，保留开关和视频。
+
+视频上以绿色矩形叠加所有有效人框，使用 `video_x/video_y/video_w/video_h`，按实际视频图像的缩放与居中位置映射到屏幕，支持竖横屏、720p/1080p 及黑边；坐标映射也兼容等比填充时的中心裁切。检测层独立于视频像素，不拷贝或重新编码视频。无人、检测失败、关闭识别、停止视频、断开连接或切换视频流时清框，超过 1.5 秒未收到新的界面检测结果也隐藏旧框。只在视频已有画面且流编号、视频尺寸、识别代次匹配时显示。识别约每 300 ms 更新一次，按最新结果更新框，移动时可能有滞后；检测序号不对应 H.264 帧号，叠框不代表逐帧同步。
 
 `Network/GXPersonClient.h/.m` 使用单独的 GCDAsyncSocket 和串行队列，按 LF 读取，单条上限 8192 字节；校验 JSON 后只保留最新结果，主线程更新合并，避免 UI 积压。delegate 状态的 `result` 字典保留全部 boxes，供后续业务使用。其 `seq` 是检测序号，不是 H.264 帧编号。关闭成功应答后不再接受旧代结果，关闭 App/识别连接不自动改变板端 enabled。
 
-随包 `PERSON_TCP_V1_REFERENCE.md` 给出完整协议，只有新固件提供 5601。旧固件仍可播放视频，但识别端口会连接失败。本次工程结构与视频 C 核心测试通过；新增 Objective-C 代码尚未在 Xcode 编译或真机验证。
+随包 `PERSON_TCP_V1_REFERENCE.md` 给出完整协议，只有新固件提供 5601。旧固件仍可播放视频，但识别端口会连接失败。本次工程结构、视频 C 核心测试及 25 项框坐标映射测试通过；新增 Objective-C 叠框尚未在 Xcode 编译或真机验证。
 
 ## 在 Xcode 运行
 
@@ -68,13 +70,14 @@ GCDAsyncSocket 内部 socket 队列
 |---|---|
 | `GXCameraViewer/App/` | App 入口、Window 和控制器安装 |
 | `GXCameraViewer/Core/GXVPWire.c/.h` | 可在主机运行的协议校验、请求封装、Annex-B NAL 扫描 |
+| `GXCameraViewer/Core/GXVideoGeometry.c/.h` | 视频像素框到视图坐标的等比缩放、居中和裁剪，可在主机测试 |
 | `GXCameraViewer/Network/GXCameraClient.m` | GCDAsyncSocket、请求编号/匹配、启停状态、超时、断线清理、统计 |
 | `GXCameraViewer/Video/GXVideoPipeline.m` | 有界输入队列、帧龄/参考链恢复、流代隔离 |
 | `GXCameraViewer/Video/GXH264Decoder.m` | SPS/PPS、AVCC sample、VideoToolbox 硬件会话 |
-| `GXCameraViewer/Video/GXVideoView.m` | 最新像素缓冲槽、DisplayLink、系统显示图层 |
+| `GXCameraViewer/Video/GXVideoView.m` | 最新像素缓冲槽、DisplayLink、系统显示图层及人形框叠加层 |
 | `GXCameraViewer/UI/GXCameraViewController.m` | 中文界面、按钮状态、设置和日志 |
 | `tools/check_macos.sh` | Mac 上解析依赖并编译真机目标（不签名） |
-| `tools/test_core.sh` | 协议对照及内存边界测试；仓库中使用真实板端源码，独立包中使用随附协议快照 |
+| `tools/test_core.sh` | 协议对照、内存边界及检测框映射测试；仓库中使用真实板端源码，独立包中使用随附协议快照 |
 | `tools/check_project.py` | 不依赖 Xcode 的工程引用、资源、Scheme 和源文件清单检查 |
 
 ## 已检查与待真机确认
@@ -95,6 +98,8 @@ bash tools/check_macos.sh
 
 首轮真机请依次验证：连接后空闲 → 720p 开始 → 停止 → 1080p 开始 → 停止 → 多轮重复 → 旋转/操作界面 → 断开重连 → 进入后台再返回。查看接收/硬解/显示帧率及 Xcode 日志；帧率和“相对到达偏移”均不替代拍摄计时器等光学端到端延迟测量。
 
+叠框真机检查：单人及多人检测均显示框 → 横竖屏旋转后仍对齐实际图像 → 人离开、关闭识别或停止视频后旧框消失 → 720p/1080p 切换及断线重连不保留旧流框。识别数据停止更新超过 1.5 秒时，旧框应隐藏；恢复新结果后重新显示。框会跟随约 300 ms 一次的识别结果，移动目标与视频可能有时间差。
+
 ## 常见问题
 
 - **连不上**：确认手机确实连接 GX-7259，电脑客户端已退出，地址 192.168.188.1/端口 5600 未变；设置 → 本 App → 本地网络中允许访问。
@@ -106,7 +111,7 @@ bash tools/check_macos.sh
 
 ## 本版范围与参考
 
-本版仅提供实时视频及已有 GXVP 控制。人形坐标、UDP/UART、录制、音频、自动加入热点、RTSP、MJPEG尚未加入；嵌入式源码和固件没有因此修改。
+本版提供实时视频、已有 GXVP 控制及 TCP 人形识别控制和人框叠加。UDP/UART、录制、音频、自动加入热点、RTSP、MJPEG尚未加入；本次 iOS 叠框修改未改动嵌入式源码和固件。
 
 - [GXVP v1 固件协议快照](GXVP_V1_REFERENCE.md)（来源：仓库 `camera_tcp_example/GXVP_V1.md`）
 - [CocoaAsyncSocket 官方项目与安装方式](https://github.com/robbiehanson/CocoaAsyncSocket)

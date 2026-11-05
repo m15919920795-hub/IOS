@@ -28,6 +28,7 @@
 		F78E0A6D13DA53054AB07E8A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */; };
 		F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */ = {isa = PBXBuildFile; fileRef = BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */; };
 		3B12050BBAEA165615404B5C /* GXPersonClient.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBED84CBDD07626DD7AC6BC /* GXPersonClient.m */; };
+		A9B0CCCAB3C35649CC2D81BC /* GXVideoGeometry.c in Sources */ = {isa = PBXBuildFile; fileRef = 4218AC26B4DB1163072C0426 /* GXVideoGeometry.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,8 @@
 		0B13FFBCB0B73CF4A56BE577 /* GXVideoPipeline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXVideoPipeline.m; sourceTree = "<group>"; };
 		19C881878AE42B60B1F69FE3 /* GXVPWire.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = GXVPWire.c; sourceTree = "<group>"; };
 		1C810356676FE3DFE0845016 /* GXVPWire.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXVPWire.h; sourceTree = "<group>"; };
+		4218AC26B4DB1163072C0426 /* GXVideoGeometry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = GXVideoGeometry.c; sourceTree = "<group>"; };
+		683B712D85798B21BFE99C76 /* GXVideoGeometry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXVideoGeometry.h; sourceTree = "<group>"; };
 		22965F070AD56E67FA7018A8 /* GXAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXAppDelegate.m; sourceTree = "<group>"; };
 		311AE33D009637155BA2CF41 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -184,6 +187,8 @@
 			children = (
 				19C881878AE42B60B1F69FE3 /* GXVPWire.c */,
 				1C810356676FE3DFE0845016 /* GXVPWire.h */,
+				4218AC26B4DB1163072C0426 /* GXVideoGeometry.c */,
+				683B712D85798B21BFE99C76 /* GXVideoGeometry.h */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -275,6 +280,7 @@
 				0BD8A83ECE2E0614979E09B3 /* GXSceneDelegate.m in Sources */,
 				22B50ACFF702753D22F7DBCB /* main.m in Sources */,
 				F4CA4F8F4DA49D49A4684A73 /* GXVPWire.c in Sources */,
+				A9B0CCCAB3C35649CC2D81BC /* GXVideoGeometry.c in Sources */,
 				F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */,
 				3B12050BBAEA165615404B5C /* GXPersonClient.m in Sources */,
 				941747687507B38D8719FEA7 /* GXH264Decoder.m in Sources */,
