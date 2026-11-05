@@ -5,6 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GXVideoView : UIView
 /* Thread-safe. Old-generation outputs are ignored, including outputs from an in-flight decode. */
 - (void)beginGeneration:(uint64_t)generation streamID:(uint32_t)streamID;
+/* Immediately schedules main-queue submission, keeping only the latest pending image. */
 - (void)offerPixelBuffer:(CVPixelBufferRef)image generation:(uint64_t)generation arrivalTime:(CFTimeInterval)arrival;
 - (NSDictionary<NSString *, NSNumber *> *)statistics;
 /* Main queue only. Pass the latest validated detection result, or nil to clear. */

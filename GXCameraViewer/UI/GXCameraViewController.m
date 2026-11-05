@@ -14,6 +14,10 @@
 @property (nonatomic, strong) GXVideoView *videoView;
 @property (nonatomic, strong) UITextField *hostField, *portField;
 @property (nonatomic, strong) UIButton *connectButton, *startButton, *stopButton, *statusButton, *idrButton;
+@property (nonatomic, strong) UIButton *videoOnlyButton;
+@property (nonatomic, strong) UIScrollView *controlsScrollView;
+@property (nonatomic, strong) UIStackView *controlsStack;
+@property (nonatomic) BOOL videoOnly;
 @property (nonatomic, strong) UISegmentedControl *profiles;
 @property (nonatomic, strong) UILabel *titleLabel, *stateLabel, *statsLabel, *hintLabel;
 @property (nonatomic, strong) UITextView *logView;
@@ -50,7 +54,7 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.systemBackgroundColor;
+    self.view.backgroundColor = UIColor.blackColor;
     self.view.tintColor = [UIColor colorWithRed:0.08 green:0.54 blue:0.72 alpha:1];
     self.logs = [NSMutableArray array];
     self.titleLabel = [self label:25 weight:UIFontWeightBold]; self.titleLabel.text = @"GX 摄像板";
@@ -68,9 +72,8 @@
     UIStackView *connection = [self row:@[self.hostField, self.portField, self.connectButton]];
     self.stateLabel = [self label:14 weight:UIFontWeightSemibold]; self.stateLabel.text = @"未连接";
     self.videoView = [GXVideoView new];
-    NSLayoutConstraint *aspect = [self.videoView.heightAnchor constraintEqualToAnchor:self.videoView.widthAnchor multiplier:9.0 / 16.0];
-    aspect.priority = UILayoutPriorityDefaultLow; aspect.active = YES;
-    [self.videoView.heightAnchor constraintGreaterThanOrEqualToConstant:80].active = YES;
+    self.videoView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.videoView];
     self.profiles = [[UISegmentedControl alloc] initWithItems:@[@"720p · 25 fps", @"1080p · 20 fps"]];
     self.profiles.selectedSegmentIndex = 0;
     self.startButton = [self button:@"开始" action:@selector(startTapped)];
@@ -97,20 +100,57 @@
     self.logView.font = [UIFont monospacedSystemFontOfSize:11 weight:UIFontWeightRegular];
     NSLayoutConstraint *logHeight = [self.logView.heightAnchor constraintEqualToConstant:110];
     logHeight.priority = 999; logHeight.active = YES;
-    UIStackView *content = [[UIStackView alloc] initWithArrangedSubviews:@[
-        self.titleLabel, self.hintLabel, connection, self.stateLabel, self.videoView,
+    self.controlsStack = [[UIStackView alloc] initWithArrangedSubviews:@[
+        self.titleLabel, self.hintLabel, connection, self.stateLabel,
         self.profiles, commands, self.statsLabel, personRow, self.personLabel, self.logView]];
+    UIStackView *content = self.controlsStack;
     content.axis = UILayoutConstraintAxisVertical; content.spacing = 8;
+    content.layoutMarginsRelativeArrangement = YES;
+    content.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(10, 10, 10, 10);
     content.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:content];
+    self.controlsScrollView = [UIScrollView new];
+    self.controlsScrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.controlsScrollView.backgroundColor = [UIColor.systemBackgroundColor colorWithAlphaComponent:0.88];
+    self.controlsScrollView.layer.cornerRadius = 12;
+    self.controlsScrollView.clipsToBounds = YES;
+    self.controlsScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    self.controlsScrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+    [self.controlsScrollView addSubview:content];
+    [self.view addSubview:self.controlsScrollView];
+    self.videoOnlyButton = [self button:@"仅画面" action:@selector(videoOnlyTapped)];
+    UIButtonConfiguration *toggleStyle = [self.videoOnlyButton.configuration copy];
+    toggleStyle.baseForegroundColor = UIColor.whiteColor;
+    toggleStyle.baseBackgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.6];
+    self.videoOnlyButton.configuration = toggleStyle;
+    self.videoOnlyButton.translatesAutoresizingMaskIntoConstraints = NO;
+    self.videoOnlyButton.accessibilityHint = @"隐藏控制面板，保留实时画面和人框；再次点击恢复界面。";
+    [self.view addSubview:self.videoOnlyButton];
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
+    UILayoutGuide *scrollContent = self.controlsScrollView.contentLayoutGuide;
+    UILayoutGuide *scrollFrame = self.controlsScrollView.frameLayoutGuide;
+    // Fill the display with video; keep interactive controls inside the safe area.
     [NSLayoutConstraint activateConstraints:@[
-        [content.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor constant:12],
-        [content.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-12],
-        [content.topAnchor constraintEqualToAnchor:safe.topAnchor constant:8],
-        [content.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-8]
+        [self.videoView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.videoView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [self.videoView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [self.videoView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [self.videoOnlyButton.topAnchor constraintEqualToAnchor:safe.topAnchor constant:8],
+        [self.videoOnlyButton.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-12],
+        [self.videoOnlyButton.widthAnchor constraintEqualToConstant:112],
+        [self.controlsScrollView.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor constant:12],
+        [self.controlsScrollView.trailingAnchor constraintEqualToAnchor:self.videoOnlyButton.leadingAnchor constant:-8],
+        [self.controlsScrollView.topAnchor constraintEqualToAnchor:self.videoOnlyButton.topAnchor],
+        [self.controlsScrollView.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.keyboardLayoutGuide.topAnchor constant:-8],
+        [self.controlsScrollView.heightAnchor constraintGreaterThanOrEqualToConstant:42],
+        [content.leadingAnchor constraintEqualToAnchor:scrollContent.leadingAnchor],
+        [content.trailingAnchor constraintEqualToAnchor:scrollContent.trailingAnchor],
+        [content.topAnchor constraintEqualToAnchor:scrollContent.topAnchor],
+        [content.bottomAnchor constraintEqualToAnchor:scrollContent.bottomAnchor],
+        [content.widthAnchor constraintEqualToAnchor:scrollFrame.widthAnchor]
     ]];
-    [self.videoView setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
+    NSLayoutConstraint *panelHeight = [self.controlsScrollView.heightAnchor constraintEqualToAnchor:content.heightAnchor];
+    panelHeight.priority = UILayoutPriorityDefaultLow; panelHeight.active = YES;
+    [self updateControlsLayout];
     self.client = [[GXCameraClient alloc] initWithVideoView:self.videoView]; self.client.delegate = self;
     self.personClient = [GXPersonClient new]; self.personClient.delegate = self;
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(background:)
@@ -122,14 +162,29 @@
 - (void)dealloc { [NSNotificationCenter.defaultCenter removeObserver:self]; [self.client disconnect]; [self.personClient disconnect]; }
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
+    [self updateControlsLayout];
+}
+- (void)updateControlsLayout {
     BOOL compact = self.view.bounds.size.height < 500;
-    self.titleLabel.hidden = compact;
-    self.hintLabel.hidden = self.view.bounds.size.height < 740;
-    self.statsLabel.hidden = self.personLabel.hidden = compact;
+    self.titleLabel.hidden = self.hintLabel.hidden = compact;
     self.logView.hidden = self.view.bounds.size.height < 700;
-    UIStackView *stack = (UIStackView *)self.videoView.superview;
     CGFloat spacing = compact ? 5 : 8;
-    if (stack.spacing != spacing) stack.spacing = spacing;
+    if (self.controlsStack.spacing != spacing) self.controlsStack.spacing = spacing;
+}
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskLandscape; }
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation { return UIInterfaceOrientationLandscapeRight; }
+- (BOOL)prefersStatusBarHidden { return YES; }
+- (BOOL)prefersHomeIndicatorAutoHidden { return self.videoOnly; }
+- (void)videoOnlyTapped {
+    [self.view endEditing:YES];
+    self.videoOnly = !self.videoOnly;
+    self.controlsScrollView.hidden = self.videoOnly;
+    UIButtonConfiguration *configuration = [self.videoOnlyButton.configuration copy];
+    configuration.title = self.videoOnly ? @"恢复界面" : @"仅画面";
+    self.videoOnlyButton.configuration = configuration;
+    self.videoOnlyButton.accessibilityHint = self.videoOnly ? @"显示控制面板，继续播放实时画面和人框。" :
+        @"隐藏控制面板，保留实时画面和人框；再次点击恢复界面。";
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
 }
 - (void)background:(NSNotification *)notification {
     (void)notification;

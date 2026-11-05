@@ -4,7 +4,6 @@
 
 static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
 
-@class GXDisplayLinkProxy;
 @interface GXVideoView () {
     NSLock *_lock;
     CVPixelBufferRef _latest;
@@ -12,29 +11,24 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     uint64_t _generation, _offered, _replaced, _displayed, _stale;
     uint32_t _streamID;
     AVSampleBufferDisplayLayer *_displayLayer;
-    CADisplayLink *_displayLink;
+    BOOL _drawScheduled, _inBackground, _needsLayerReset;
     CAShapeLayer *_personOverlay;
     NSDictionary<NSString *, id> *_personResult;
     CFTimeInterval _personResultArrival;
     CGSize _displayedVideoSize;
     uint64_t _displayedGeneration;
+    NSTimer *_personExpiryTimer;
 }
+- (void)scheduleDrawLocked;
 - (void)drawLatest;
 - (void)updatePersonOverlay;
-@end
-@interface GXDisplayLinkProxy : NSObject
-@property (nonatomic, weak) GXVideoView *view;
-- (void)tick:(CADisplayLink *)link;
-@end
-@implementation GXDisplayLinkProxy
-- (void)tick:(CADisplayLink *)link { (void)link; [self.view drawLatest]; }
 @end
 
 @implementation GXVideoView
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         _lock = [NSLock new]; self.backgroundColor = UIColor.blackColor;
-        self.clipsToBounds = YES; self.layer.cornerRadius = 12;
+        self.clipsToBounds = YES;
         _personOverlay = [CAShapeLayer layer];
         _personOverlay.fillColor = UIColor.clearColor.CGColor;
         _personOverlay.strokeColor = [UIColor colorWithRed:0.15 green:1 blue:0.3 alpha:1].CGColor;
@@ -43,9 +37,7 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
         _personOverlay.actions = @{@"path": NSNull.null};
         [self.layer addSublayer:_personOverlay];
         [self replaceDisplayLayer];
-        GXDisplayLinkProxy *proxy = [GXDisplayLinkProxy new]; proxy.view = self;
-        _displayLink = [CADisplayLink displayLinkWithTarget:proxy selector:@selector(tick:)];
-        [_displayLink addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
+        _inBackground = UIApplication.sharedApplication.applicationState == UIApplicationStateBackground;
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(background:)
             name:UIApplicationDidEnterBackgroundNotification object:nil];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(foreground:)
@@ -54,18 +46,26 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     return self;
 }
 - (void)dealloc {
-    [_displayLink invalidate];
+    [_personExpiryTimer invalidate];
     [NSNotificationCenter.defaultCenter removeObserver:self];
     if (_latest) CVPixelBufferRelease(_latest);
 }
 - (void)background:(NSNotification *)notification {
-    (void)notification; _displayLink.paused = YES; [self setPersonDetectionResult:nil];
+    (void)notification;
+    [_lock lock];
+    _inBackground = YES;
+    if (_latest) { CVPixelBufferRelease(_latest); _latest = NULL; _stale++; }
+    [_lock unlock];
+    [self setPersonDetectionResult:nil];
 }
-- (void)foreground:(NSNotification *)notification { (void)notification; _displayLink.paused = NO; }
+- (void)foreground:(NSNotification *)notification {
+    (void)notification;
+    [_lock lock]; _inBackground = NO; [self scheduleDrawLocked]; [_lock unlock];
+}
 - (void)replaceDisplayLayer {
     [_displayLayer removeFromSuperlayer];
     _displayLayer = [AVSampleBufferDisplayLayer layer];
-    _displayLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+    _displayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     _displayLayer.frame = self.bounds;
     [self.layer insertSublayer:_displayLayer below:_personOverlay];
     _displayedVideoSize = CGSizeZero;
@@ -82,23 +82,35 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     _generation = generation; _streamID = streamID;
     if (_latest) { CVPixelBufferRelease(_latest); _latest = NULL; }
     _offered = _replaced = _displayed = _stale = 0;
+    // Reset and submission share one main-queue task; a new frame cannot precede its reset.
+    _needsLayerReset = YES;
+    [self scheduleDrawLocked];
     [_lock unlock];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self->_lock lock]; BOOL current = generation == self->_generation; [self->_lock unlock];
-        if (current) [self replaceDisplayLayer];
-    });
 }
 - (void)setPersonDetectionResult:(NSDictionary<NSString *, id> *)result {
     NSAssert(NSThread.isMainThread, @"Detection overlays must be updated on the main queue");
     // Video status is republished every second. It must not renew an old result's lifetime.
     if (_personResult == result) return;
     _personResult = [result copy]; _personResultArrival = CACurrentMediaTime();
+    [_personExpiryTimer invalidate]; _personExpiryTimer = nil;
+    if (result) {
+        // Expire boxes even when no new video frames or detection results arrive.
+        // One timer is rearmed per new result, not per decoded frame or status publication.
+        __weak GXVideoView *weakSelf = self;
+        _personExpiryTimer = [NSTimer timerWithTimeInterval:GXPersonOverlayLifetime repeats:NO block:^(NSTimer *timer) {
+            (void)timer; [weakSelf updatePersonOverlay];
+        }];
+        [NSRunLoop.mainRunLoop addTimer:_personExpiryTimer forMode:NSRunLoopCommonModes];
+    }
     [self updatePersonOverlay];
 }
 - (void)updatePersonOverlay {
-    [_lock lock]; uint32_t stream = _streamID; uint64_t generation = _generation; [_lock unlock];
+    [_lock lock];
+    uint32_t stream = _streamID; uint64_t generation = _generation;
+    BOOL active = !_inBackground && !_needsLayerReset;
+    [_lock unlock];
     double width = [_personResult[@"video_width"] doubleValue], height = [_personResult[@"video_height"] doubleValue];
-    if (!_personResult || ![_personResult[@"valid"] boolValue] || [_personResult[@"status"] integerValue] != 0 ||
+    if (!active || !_personResult || ![_personResult[@"valid"] boolValue] || [_personResult[@"status"] integerValue] != 0 ||
         !stream || [_personResult[@"stream"] unsignedIntValue] != stream || _displayedGeneration != generation ||
         width <= 0 || height <= 0 || width != _displayedVideoSize.width || height != _displayedVideoSize.height ||
         CACurrentMediaTime() - _personResultArrival > GXPersonOverlayLifetime) {
@@ -120,10 +132,18 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     [_lock lock];
     if (generation == _generation) {
         _offered++;
+        if (_inBackground) { _stale++; [_lock unlock]; return; }
         if (_latest) { CVPixelBufferRelease(_latest); _replaced++; }
         _latest = CVPixelBufferRetain(image); _arrival = arrival;
+        [self scheduleDrawLocked];
     }
     [_lock unlock];
+}
+// Caller holds _lock. At most one submission task is queued; pending images coalesce to the latest.
+- (void)scheduleDrawLocked {
+    if (_drawScheduled || (!_needsLayerReset && (_inBackground || !_latest))) return;
+    _drawScheduled = YES;
+    dispatch_async(dispatch_get_main_queue(), ^{ [self drawLatest]; });
 }
 - (NSDictionary<NSString *, NSNumber *> *)statistics {
     [_lock lock];
@@ -132,16 +152,17 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     [_lock unlock]; return value;
 }
 - (void)drawLatest {
-    // Expire the drawing without releasing the result: repeated status callbacks must not revive it.
-    if (_personOverlay.path && CACurrentMediaTime() - _personResultArrival > GXPersonOverlayLifetime)
-        _personOverlay.path = NULL;
     [_lock lock];
-    CVPixelBufferRef image = _latest; _latest = NULL;
+    _drawScheduled = NO;
+    if (_needsLayerReset) { [self replaceDisplayLayer]; _needsLayerReset = NO; }
+    CVPixelBufferRef image = _inBackground ? NULL : _latest;
+    if (image) _latest = NULL;
     uint64_t generation = _generation; CFTimeInterval arrival = _arrival;
     [_lock unlock];
     if (!image) return;
     if (CACurrentMediaTime() - arrival > 0.2) {
-        CVPixelBufferRelease(image); [_lock lock]; _stale++; [_lock unlock]; return;
+        CVPixelBufferRelease(image);
+        [_lock lock]; if (generation == _generation) _stale++; [_lock unlock]; return;
     }
     CMVideoFormatDescriptionRef format = NULL;
     CMSampleBufferRef sample = NULL;
@@ -152,13 +173,17 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
     CGSize imageSize = format ? CMVideoFormatDescriptionGetPresentationDimensions(format, false, true) : CGSizeZero;
     CVPixelBufferRelease(image);
     if (format) CFRelease(format);
-    if (status != noErr) return;
+    if (status != noErr) {
+        [_lock lock]; if (generation == _generation) _stale++; [_lock unlock]; return;
+    }
     CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(sample, true);
     if (attachments && CFArrayGetCount(attachments)) {
         CFMutableDictionaryRef item = (CFMutableDictionaryRef)CFArrayGetValueAtIndex(attachments, 0);
         CFDictionarySetValue(item, kCMSampleAttachmentKey_DisplayImmediately, kCFBooleanTrue);
     }
-    [_lock lock]; BOOL current = generation == _generation; [_lock unlock];
+    // Keep generation validation and enqueue atomic with STOP/reconnect.
+    [_lock lock];
+    BOOL current = generation == _generation && !_needsLayerReset && !_inBackground;
     BOOL enqueued = NO;
     if (current) {
         if (@available(iOS 17.0, *)) {
@@ -170,10 +195,9 @@ static const CFTimeInterval GXPersonOverlayLifetime = 1.5;
             if (_displayLayer.readyForMoreMediaData) { [_displayLayer enqueueSampleBuffer:sample]; enqueued = YES; }
         }
     }
-    CFRelease(sample);
-    [_lock lock];
-    if (current && generation == _generation) { if (enqueued) _displayed++; else _stale++; }
+    if (generation == _generation) { if (enqueued) _displayed++; else _stale++; }
     [_lock unlock];
+    CFRelease(sample);
     if (enqueued && (!CGSizeEqualToSize(_displayedVideoSize, imageSize) || _displayedGeneration != generation)) {
         _displayedVideoSize = imageSize; _displayedGeneration = generation;
         [self updatePersonOverlay];

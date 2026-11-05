@@ -39,6 +39,11 @@ int main(void) {
     reject((GXVideoRect){0, 0, 100, 100}, 1280, 720, (GXVideoRect){0, 0, 320, 240}, true);
     expect((GXVideoRect){0, 0, 1280, 720}, 1280, 720, (GXVideoRect){0, 0, 180, 320}, true,
            (GXVideoRect){0, 0, 180, 320});
+    /* Wide landscape screens crop vertically when the 16:9 picture fills the display. */
+    expect(box, 1280, 720, (GXVideoRect){0, 0, 844, 390}, true, (GXVideoRect){211, 76.3125, 422, 237.375});
+    expect((GXVideoRect){0, 0, 1280, 360}, 1280, 720, (GXVideoRect){0, 0, 640, 180}, true,
+           (GXVideoRect){0, 0, 640, 90});
+    reject((GXVideoRect){0, 0, 1280, 180}, 1280, 720, (GXVideoRect){0, 0, 640, 180}, true);
     /* Partial boxes are clipped to the source before mapping; protocol sample is video pixels. */
     expect((GXVideoRect){-100, -50, 300, 200}, 1280, 720, screen, false, (GXVideoRect){0, 0, 50, 37.5});
     expect((GXVideoRect){1200, 700, 200, 100}, 1280, 720, screen, false, (GXVideoRect){300, 175, 20, 5});
