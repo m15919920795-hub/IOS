@@ -2,6 +2,16 @@
 
 Objective-C / UIKit 工程，对接当前 BK7259 `camera_tcp_example` 的 **GXVP v1** 固件。TCP 使用 GCDAsyncSocket，H.264 使用 VideoToolbox 硬件解码，解码图像使用 AVSampleBufferDisplayLayer 显示。工程不依赖 FFmpeg、FFplay、RTSP 或 CocoaPods。
 
+## 2026-11-05 人形识别端口
+
+新增独立 **TCP 5601 / 逐行 JSON v1**。点击主“连接”时，同时连接视频 5600 和识别 5601；识别连接失败不影响视频，可点击“识别重连”。“人形识别”开关控制板端取帧/推理，不控制视频。板端默认开启，每 300 ms 启动一次检测，视频未 START 时等待输入。
+
+竖屏显示最新人数、推理时间及首框置信度、视频像素坐标。无人时人数归零，错误与无人分开显示；开关、流编号、代次变化时清除旧结果。横屏隐藏详细统计，保留开关和视频。本次不叠加人框，也不改变解码/显示链路。
+
+`Network/GXPersonClient.h/.m` 使用单独的 GCDAsyncSocket 和串行队列，按 LF 读取，单条上限 8192 字节；校验 JSON 后只保留最新结果，主线程更新合并，避免 UI 积压。delegate 状态的 `result` 字典保留全部 boxes，供后续业务使用。其 `seq` 是检测序号，不是 H.264 帧编号。关闭成功应答后不再接受旧代结果，关闭 App/识别连接不自动改变板端 enabled。
+
+随包 `PERSON_TCP_V1_REFERENCE.md` 给出完整协议，只有新固件提供 5601。旧固件仍可播放视频，但识别端口会连接失败。本次工程结构与视频 C 核心测试通过；新增 Objective-C 代码尚未在 Xcode 编译或真机验证。
+
 ## 在 Xcode 运行
 
 1. 将 **整个 `GXCameraViewer` 目录**复制到 Mac，或解压提供的源码 ZIP。不要只复制 `.xcodeproj`。

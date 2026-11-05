@@ -27,6 +27,7 @@
 		F4CA4F8F4DA49D49A4684A73 /* GXVPWire.c in Sources */ = {isa = PBXBuildFile; fileRef = 19C881878AE42B60B1F69FE3 /* GXVPWire.c */; };
 		F78E0A6D13DA53054AB07E8A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33DC893FE4CE40DD9674DB93 /* QuartzCore.framework */; };
 		F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */ = {isa = PBXBuildFile; fileRef = BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */; };
+		3B12050BBAEA165615404B5C /* GXPersonClient.m in Sources */ = {isa = PBXBuildFile; fileRef = EBBED84CBDD07626DD7AC6BC /* GXPersonClient.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,8 @@
 		E4DC0A99B6E9C2A76DF99649 /* GXAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXAppDelegate.h; sourceTree = "<group>"; };
 		F78A71AF8BBF8CC2F6F31354 /* README_CN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README_CN.md; sourceTree = "<group>"; };
 		FDC0762E0A4C9B74A3AA8468 /* GXH264Decoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXH264Decoder.m; sourceTree = "<group>"; };
+		6E1A850214C301CFE9FED491 /* GXPersonClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GXPersonClient.h; sourceTree = "<group>"; };
+		EBBED84CBDD07626DD7AC6BC /* GXPersonClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GXPersonClient.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +148,8 @@
 			children = (
 				BAAE4735D7F06AB9AF0FEEF6 /* GXCameraClient.h */,
 				BECBC9C0E4C09C42AE92FD4A /* GXCameraClient.m */,
+				6E1A850214C301CFE9FED491 /* GXPersonClient.h */,
+				EBBED84CBDD07626DD7AC6BC /* GXPersonClient.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -271,6 +276,7 @@
 				22B50ACFF702753D22F7DBCB /* main.m in Sources */,
 				F4CA4F8F4DA49D49A4684A73 /* GXVPWire.c in Sources */,
 				F86034644D62FD526AACFF14 /* GXCameraClient.m in Sources */,
+				3B12050BBAEA165615404B5C /* GXPersonClient.m in Sources */,
 				941747687507B38D8719FEA7 /* GXH264Decoder.m in Sources */,
 				807FB026343A18BD8625E2C5 /* GXVideoPipeline.m in Sources */,
 				1BB4DDC68C31251304CE5061 /* GXVideoView.m in Sources */,
