@@ -1,5 +1,7 @@
 # 人形识别 TCP 协议 v1（2026-11-05）
 
+2026-11-09兼容扩展：`status/reply`可额外包含 `recording_protocol:1`，表示同一5601连接支持 `record_get/record_start/record_stop`。仅发送录像指令后才订阅录像消息，原识别开关与结果保持原格式。详见 [录像控制v1](RECORD_TCP_V1_REFERENCE.md)。
+
 ## 端口与开关
 
 - 板端地址 `192.168.188.1`，新增 TCP **5601**，每个端口支持一个活动客户端。

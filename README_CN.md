@@ -1,5 +1,13 @@
 # GX 摄像板 iOS 客户端 V0.1.0
 
+## 2026-11-09 TF录像控制
+
+控制面板增加“开始录像”“停止录像”“录像状态”，与人形识别共用GCDAsyncSocket TCP5601连接。先开启视频，再开始录像；开始成功表示首帧已写入，停止成功表示MP4已经关闭，失败会显示卡/空间/写入等原因。界面包含文件名、分辨率、帧数与保存状态，可连续开关录像而无需拔卡。
+
+需要配套支持 `recording_protocol=1` 的板端固件；旧固件仍可播放及识别，但录像按钮不可用。连接/重连自动读取板端状态，控制断线或超时不冒充录像已停止。“识别重连”改为“控制重连”，识别开关不影响录像，录像操作不暂停视频或切换识别。识别节奏由板端决定，本轮未改推理频率；下方11-05的300ms描述属于早期版本。
+
+完整命令、应答时机、错误码见 [TF录像控制协议](RECORD_TCP_V1_REFERENCE.md)。工程结构、原视频协议/坐标测试通过；Objective-C/UIKit整合仍需在Mac执行Xcode构建和真机测试。Mac可运行 `bash tools/check_macos.sh`。
+
 Objective-C / UIKit 工程，对接当前 BK7259 `camera_tcp_example` 的 **GXVP v1** 固件。TCP 使用 GCDAsyncSocket，H.264 使用 VideoToolbox 硬件解码，解码图像使用 AVSampleBufferDisplayLayer 显示。工程不依赖 FFmpeg、FFplay、RTSP 或 CocoaPods。
 
 ## 2026-11-05 人形识别端口

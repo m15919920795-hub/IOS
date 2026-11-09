@@ -10,6 +10,8 @@
 @property (nonatomic, strong) UISwitch *personSwitch;
 @property (nonatomic, strong) UIButton *personConnectButton;
 @property (nonatomic, strong) UILabel *personLabel;
+@property (nonatomic, strong) UIButton *recordStartButton, *recordStopButton, *recordStatusButton;
+@property (nonatomic, strong) UILabel *recordLabel;
 @property (nonatomic, strong) NSDictionary *personState;
 @property (nonatomic, strong) GXVideoView *videoView;
 @property (nonatomic, strong) UITextField *hostField, *portField;
@@ -85,12 +87,12 @@
     self.statsLabel = [self label:12 weight:UIFontWeightRegular];
     self.statsLabel.font = [UIFont monospacedDigitSystemFontOfSize:12 weight:UIFontWeightRegular];
     self.statsLabel.text = @"接收 0 fps · 硬解 0 fps · 显示 0 fps\n0 kbit/s · 等待视频";
-    UILabel *personTitle = [self label:14 weight:UIFontWeightSemibold]; personTitle.text = @"人形识别 · 300 ms";
+    UILabel *personTitle = [self label:14 weight:UIFontWeightSemibold]; personTitle.text = @"人形识别";
     self.personSwitch = [UISwitch new];
     [self.personSwitch addTarget:self action:@selector(personSwitchChanged) forControlEvents:UIControlEventValueChanged];
-    self.personConnectButton = [self button:@"识别重连" action:@selector(personConnectTapped)];
+    self.personConnectButton = [self button:@"控制重连" action:@selector(personConnectTapped)];
     UIButtonConfiguration *reconnectStyle = [self.personConnectButton.configuration copy];
-    reconnectStyle.attributedTitle = [[NSAttributedString alloc] initWithString:@"识别重连"
+    reconnectStyle.attributedTitle = [[NSAttributedString alloc] initWithString:@"控制重连"
         attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold]}];
     reconnectStyle.titleLineBreakMode = NSLineBreakByClipping;
     reconnectStyle.contentInsets = NSDirectionalEdgeInsetsMake(8, 12, 8, 12);
@@ -105,6 +107,13 @@
     personRow.alignment = UIStackViewAlignmentCenter;
     self.personLabel = [self label:12 weight:UIFontWeightRegular]; self.personLabel.numberOfLines = 2;
     self.personLabel.text = @"识别端口未连接";
+    self.recordStartButton = [self button:@"开始录像" action:@selector(recordStartTapped)];
+    self.recordStopButton = [self button:@"停止录像" action:@selector(recordStopTapped)];
+    self.recordStatusButton = [self button:@"录像状态" action:@selector(recordStatusTapped)];
+    UIStackView *recordRow = [self row:@[self.recordStartButton, self.recordStopButton, self.recordStatusButton]];
+    recordRow.distribution = UIStackViewDistributionFillEqually;
+    self.recordLabel = [self label:12 weight:UIFontWeightRegular];
+    self.recordLabel.text = @"TF录像：等待控制连接";
     self.logView = [UITextView new]; self.logView.editable = NO; self.logView.selectable = YES;
     self.logView.backgroundColor = UIColor.secondarySystemBackgroundColor;
     self.logView.layer.cornerRadius = 8;
@@ -113,7 +122,7 @@
     logHeight.priority = 999; logHeight.active = YES;
     self.controlsStack = [[UIStackView alloc] initWithArrangedSubviews:@[
         self.titleLabel, self.hintLabel, connection, self.stateLabel,
-        self.profiles, commands, self.statsLabel, personRow, self.personLabel, self.logView]];
+        self.profiles, commands, self.statsLabel, personRow, self.personLabel, recordRow, self.recordLabel, self.logView]];
     UIStackView *content = self.controlsStack;
     content.axis = UILayoutConstraintAxisVertical; content.spacing = 8;
     content.layoutMarginsRelativeArrangement = YES;
@@ -234,6 +243,9 @@
     [self.videoView setPersonDetectionResult:nil];
     [self.personClient setDetectionEnabled:self.personSwitch.on];
 }
+- (void)recordStartTapped { [self.personClient startRecording]; }
+- (void)recordStopTapped { [self.personClient stopRecording]; }
+- (void)recordStatusTapped { [self.personClient getRecordingStatus]; }
 - (void)personClient:(GXPersonClient *)client stateChanged:(NSDictionary<NSString *,id> *)state {
     (void)client; self.personState = state; [self renderPersonState];
 }
@@ -245,10 +257,10 @@
     if (![s[@"pending"] boolValue]) [self.personSwitch setOn:[s[@"enabled"] boolValue] animated:NO];
     self.personConnectButton.enabled = ![s[@"connecting"] boolValue];
     NSString *text;
-    if (!connected) text = [s[@"connecting"] boolValue] ? @"识别端口连接中…" : @"识别端口未连接；点击“识别重连”连接 5601";
+    if (!connected) text = [s[@"connecting"] boolValue] ? @"控制端口连接中…" : @"控制端口未连接；点击“控制重连”连接 5601";
     else if (!known) text = @"等待读取识别状态…";
     else if (![s[@"ready"] boolValue]) text = [NSString stringWithFormat:@"模型未就绪，init_status=%@", s[@"init_status"]];
-    else if ([s[@"pending"] boolValue]) text = @"等待识别开关应答…";
+    else if ([s[@"personPending"] boolValue]) text = @"等待识别开关应答…";
     else if (![s[@"enabled"] boolValue]) text = @"人形识别已关闭；视频继续播放";
     else if (![s[@"running"] boolValue]) text = @"人形识别已开启，等待视频 START";
     else {
@@ -268,7 +280,7 @@
     self.personLabel.text = text;
     NSDictionary *result = s[@"result"];
     BOOL showBoxes = connected && known && [s[@"ready"] boolValue] && [s[@"enabled"] boolValue] &&
-        [s[@"running"] boolValue] && ![s[@"pending"] boolValue] && result && [result[@"valid"] boolValue] &&
+        [s[@"running"] boolValue] && ![s[@"personPending"] boolValue] && result && [result[@"valid"] boolValue] &&
         [result[@"status"] integerValue] == 0 && [self.status[@"connected"] boolValue] &&
         [self.status[@"configured"] boolValue] && ![self.status[@"pending"] boolValue] &&
         [self.status[@"state"] unsignedIntValue] == GXVPRunning &&
@@ -278,6 +290,42 @@
         [result[@"video_width"] unsignedIntValue] == [self.status[@"width"] unsignedIntValue] &&
         [result[@"video_height"] unsignedIntValue] == [self.status[@"height"] unsignedIntValue];
     [self.videoView setPersonDetectionResult:showBoxes ? result : nil];
+    [self renderRecordingState];
+}
+- (void)renderRecordingState {
+    NSDictionary *s = self.personState ?: @{}, *record = s[@"recording"] ?: @{};
+    BOOL connected = [s[@"connected"] boolValue], supported = [s[@"recordSupported"] boolValue];
+    BOOL known = [s[@"recordKnown"] boolValue], pending = [s[@"pending"] boolValue];
+    BOOL usable = connected && supported && known && [record[@"available"] boolValue] && !pending;
+    BOOL active = [record[@"active"] boolValue];
+    BOOL videoRunning = [self.status[@"connected"] boolValue] && [self.status[@"configured"] boolValue] &&
+        [self.status[@"state"] unsignedIntValue] == GXVPRunning && ![self.status[@"pending"] boolValue];
+    self.recordStartButton.enabled = usable && videoRunning && [record[@"video_online"] boolValue] && !active;
+    self.recordStopButton.enabled = usable && active;
+    self.recordStatusButton.enabled = connected && supported && !pending;
+    NSString *state = record[@"state"], *text;
+    if (!connected) text = @"TF录像：控制连接未建立，当前录像状态未知";
+    else if (![s[@"known"] boolValue]) text = @"TF录像：等待设备能力信息…";
+    else if (!supported) text = @"当前固件不支持TCP录像控制，请更新板端固件";
+    else if (!known) text = @"TF录像：正在查询状态…";
+    else if (![record[@"available"] boolValue]) text = @"TF录像：模块未就绪";
+    else if ([s[@"recordPending"] boolValue]) {
+        NSString *command = s[@"pendingCommand"];
+        text = [command isEqualToString:@"record_start"] ? @"正在开始录像，等待首帧写入确认…" :
+            [command isEqualToString:@"record_stop"] ? @"正在停止录像，等待文件关闭确认…" : @"正在查询录像状态…";
+    } else if ([state isEqualToString:@"RECORDING"]) text = @"TF录像中";
+    else if ([state isEqualToString:@"STARTING"]) text = @"TF录像：准备文件中…";
+    else if ([state isEqualToString:@"WAIT_IDR"]) text = @"TF录像：等待完整关键帧…";
+    else if ([state isEqualToString:@"STOPPING"]) text = @"TF录像：正在保存并关闭文件，请等待…";
+    else if ([state isEqualToString:@"ERROR"]) text = [NSString stringWithFormat:@"TF录像失败：error=%@，close_error=%@",record[@"error"],record[@"close_error"]];
+    else text = [record[@"file"] length] ? @"TF录像已停止，文件已关闭" :
+        videoRunning ? @"TF录像未开始，可点击“开始录像”" : @"TF录像未开始，请先开启视频预览";
+    if (known && connected && [record[@"file"] length])
+        text = [text stringByAppendingFormat:@"\n%@ · %@×%@/%@ fps · %@ 帧",
+            [record[@"file"] lastPathComponent],record[@"width"],record[@"height"],record[@"fps"],record[@"frames"]];
+    if (connected && [s[@"recordFeedback"] length]) text = [text stringByAppendingFormat:@"\n%@",s[@"recordFeedback"]];
+    self.recordLabel.text = text;
+    self.recordLabel.textColor = [state isEqualToString:@"ERROR"] ? UIColor.systemRedColor : UIColor.secondaryLabelColor;
 }
 - (void)cameraClient:(GXCameraClient *)client statusChanged:(NSDictionary<NSString *,id> *)status {
     (void)client; [self applyStatus:status];
